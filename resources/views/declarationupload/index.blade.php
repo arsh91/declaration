@@ -1,6 +1,6 @@
 @extends('layout')
-@section('title', 'Declaration Upload')
-@section('subtitle', 'Declaration Upload')
+@section('title', 'Document Upload')
+@section('subtitle', 'Document Upload')
 @section('content')
 
 <div class="col-lg-12" style="display: flex;justify-content: center;">

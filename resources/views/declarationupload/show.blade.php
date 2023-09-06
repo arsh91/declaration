@@ -1,6 +1,6 @@
 @extends('layout')
-@section('title', 'Declaration Upload List')
-@section('subtitle', 'Declaration List')
+@section('title', 'Document Upload List')
+@section('subtitle', 'Document List')
 @section('content')
 
 <div class="col-lg-12">
@@ -20,7 +20,8 @@
                         <thead>
                             <tr>
                                 <th>Id</th>
-                                <th>Uploded Adharcard</th>
+                                <th>File</th>
+                                <th>File Name</th>
                                 <th>Status</th>
                                 <th>Type</th>
                                 <th>Upload User</th>
@@ -38,6 +39,35 @@
         </div>
     </div>
 </div>
+<!--start: Add role Modal -->
+<div class="modal fade" id="renamefilemodal" tabindex="-1" aria-labelledby="role" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content" style="width: 630px;">
+            <div class="modal-header">
+                <h5 class="modal-title" id="role">Rename File</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" id="renamefilemodalForm" action="" class="needs-validation" novalidate>
+                @csrf
+                <div class="modal-body">
+                    <div class="alert alert-danger" style="display:none"></div>
+                    <div class="row mb-3">
+                        <label for="role_name" class="col-sm-3 col-form-label required">Set New Name</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" name="upload_name" id="upload_name" required>
+                        </div>
+                        <input type="hidden" class="form-control" name="upload_id" id="upload_id">
+                    </div>
+                </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary renamefileBtn" href="javascript:void(0)">Save</button>
+                    </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!--end: Add department Modal -->
 @endsection
 @section('js_scripts')
 <script>
@@ -45,6 +75,16 @@ $(document).ready(function() {
     setTimeout(function() {
         $('.message').fadeOut("slow");
     }, 2000);
+    var userId = {{ auth()->user()->role }};
+    var hideProofingColumn = false; 
+    var hideFinalProofingColumn = false; 
+
+    if (userId ==4) {
+        hideProofingColumn = true; 
+    }
+    if (userId ==3) {
+        hideFinalProofingColumn = true; 
+    }
     $('#role_table').DataTable({
             processing: true,
             serverSide: true,
@@ -55,9 +95,16 @@ $(document).ready(function() {
                       return row.id;    
                     }
                 },
-                { data: 'Uploded Adharcard', name: 'Uploded Adharcard',            
+                { data: 'File', name: 'File',            
                     render: function (data, type, row) {
                         return '<a href="/'+row.file+'" target="_blank" ><i class="bi-file-earmark-post-fill"></i></a>';
+                    },
+                },
+                { data: 'File Name', name: 'File Name',            
+                    render: function (data, type, row) {
+                        var parts = row.file.split('/');
+                        var imageName = parts[parts.length - 1];
+                        return imageName;
                     },
                 },
                 { data: 'Status', name: 'Status',
@@ -87,10 +134,10 @@ $(document).ready(function() {
                 },
                 { data: 'Uploded User', name: 'Uploded User',
                 render: function (data, type, row) {
-                        return "------";
+                        return row.draftuser.name;
                     }
                 },
-                { data: 'prooftuser.name', name: 'Proofing', 
+                { data: 'Proofing', name: 'Proofing', 
                     render: function (data, type, row) {
                         if (row.proofed_user_id == null) {
                             return '<button class="btn btn-primary mt-3" style="padding: 3px; font-size: 13px;" onClick="declarationStatusChange(' + row.id + ', \'proofed\')">Proofing</button>';
@@ -110,7 +157,7 @@ $(document).ready(function() {
                 { data: 'Action', name: 'Action', orderable: false, searchable: false, 
                     render: function (data, type, row) {
               
-                        return  '<i style="color:#4154f1;" onClick="deleteuploaddeclaration('+row.id+')" href="javascript:void(0)" class="fa fa-trash fa-fw pointer"></i>';
+                        return  '<i style="color:#4154f1;" onClick="deleteuploaddeclaration('+row.id+')" href="javascript:void(0)" class="fa fa-trash fa-fw pointer"></i><i style="color:#4154f1;" onClick="openrenamemodal('+row.id+')" href="javascript:void(0)" class="fa fa-edit fa-fw pointer"></i>';
                     }
                  },
             ],
@@ -119,6 +166,25 @@ $(document).ready(function() {
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
+    });
+
+    $(".renamefileBtn").click(function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var upload_name = $("#upload_name").val();
+        var id = $("#upload_id").val();
+        $.ajax({
+        type: "POST",
+        url: "{{ url('/upload/edit') }}",
+        data: {
+            id: id,
+            upload_name: upload_name
+        },
+        dataType: 'json',
+        success: function(res) {
+            // location.reload();
+        }
+    });
     });
 });
 
@@ -173,5 +239,9 @@ function typeChange(id) {
     });
 }
 
+function openrenamemodal(id) {
+    $("#upload_id").val(id);
+    $("#renamefilemodal").modal("show");
+}
 </script>
 @endsection

@@ -9,7 +9,7 @@
         <div class="d-flex align-items-center justify-content-between headerCont">
             <a href="{{ url('/dashboard') }}" class="logo d-flex align-items-center">
                 <img src="{{ asset('assets/img/logo.png') }}" alt="">
-                <span class="d-none d-lg-block">Declarations</span>
+                <span class="d-none d-lg-block">Document</span>
             </a>
             <i class="bi bi-list toggle-sidebar-btn"></i>
         </div><!-- End Logo -->
@@ -189,19 +189,24 @@
                     <span>Dashboard</span>
                 </a>
             </li><!-- End Dashboard Nav -->
+            @if(auth()->user()->role == 1 || auth()->user()->role == 5)
              <li class="nav-item">
                 <a class="nav-link {{ request()->is('declarationupload') ? '' : 'collapsed' }}" href="{{ url('/declaration/upload') }}">
                     <i class="bi-shop"></i>
-                    <span>Declaration Upload</span>
+                    <span>Document Upload</span>
                 </a>
             </li>
+            @endif
+            @if(auth()->user()->role != 5)
              <li class="nav-item">
                 <a class="nav-link {{ request()->is('/declaration/list') ? '' : 'collapsed' }}" href="{{ url('/declaration/list') }}">
                 <i class="bi bi-layout-text-window-reverse"></i>
-                    <span>Declaration Upload List
+                    <span>Document Upload List
                     </span>
                 </a>
             </li>
+            @endif
+            @if(auth()->user()->role ==1 || auth()->user()->role == 2)
             <li class="nav-item">
                 <a class="nav-link {{ request()->is('users') ? '' : 'collapsed' }}" href="{{ url('/users') }}">
                     <i class="bi bi-person-square"></i>
@@ -209,6 +214,7 @@
                     </span>
                 </a>
             </li>
+            @endif
         </ul>
     </aside><!-- End Sidebar-->
 </body>

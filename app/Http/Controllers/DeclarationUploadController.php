@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use App\Models\DeclarationUploads;
 use DataTables;
+use Storage;
 
 class DeclarationUploadController extends Controller
 {
@@ -109,5 +110,38 @@ class DeclarationUploadController extends Controller
         }
         $request->session()->flash('message','Type Change Successfully!');
         return Response()->json(['status'=>200]);
+    }
+
+    public function renameUpload(Request $request)
+    {
+        $validator = \Validator::make($request->all(),[
+            'upload_name'=>'required', 
+        ]
+        );
+        if ($validator->fails())
+        {
+            return Redirect::back()->withErrors("Something went wrong!");
+        } 
+        $validate = $validator->valid();
+
+        $oldimage = DeclarationUploads::where('Id',$validate['id'])->first(); 
+        $explodeimage =explode("/", $oldimage->file);
+
+        // $oldName = public_path($oldimage->file); // Path to the old PDF
+        // $newName = public_path("adharcardupload\" . $validate['upload_name'].".pdf"); // Path to the new PDF
+        $oldPath = storage_path('app/public/adharcardupload/') . $explodeimage[1]; // Path to the old PDF
+        $newPath = storage_path('app/public/adharcardupload/') . $validate['upload_name'].".pdf"; // Path to the new PDF
+        Storage::move($oldPath, $newPath);
+        // rename($oldPath, $newPath);
+        
+        DeclarationUploads::where('id', $validate['id'])  
+        ->update( [
+        'file' => 'adharcardupload/' . $validate['upload_name'].'.pdf',
+        'updated_at' => date('Y-m-d H:i:s')
+        ]);
+        
+        $request->session()->flash('message','File Rename Successfully!');
+        return Response()->json(['status'=>200]);
+    
     }
 }

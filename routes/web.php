@@ -32,6 +32,7 @@ Route::group(['middleware' => ['auth']], function() {
     Route::delete('/declaration/upload/delete', [DeclarationUploadController::class, 'destroy']);
     Route::post('/declaration/status/change', [DeclarationUploadController::class, 'declarationStatusChange']);
     Route::post('/declaration/type/change', [DeclarationUploadController::class, 'declarationTypeChange']);
+    Route::post('/upload/edit', [DeclarationUploadController::class, 'renameUpload']);
 
     Route::get('/users', [UsersController::class, 'index'])->name('users.index');
     Route::post('/user/role/change', [UsersController::class, 'userRoleChange']);
