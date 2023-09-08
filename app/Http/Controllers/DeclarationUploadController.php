@@ -125,15 +125,19 @@ class DeclarationUploadController extends Controller
         $validate = $validator->valid();
 
         $oldimage = DeclarationUploads::where('Id',$validate['id'])->first(); 
-        $explodeimage =explode("/", $oldimage->file);
-
-        // $oldName = public_path($oldimage->file); // Path to the old PDF
-        // $newName = public_path("adharcardupload\" . $validate['upload_name'].".pdf"); // Path to the new PDF
-        $oldPath = storage_path('app/public/adharcardupload/') . $explodeimage[1]; // Path to the old PDF
-        $newPath = storage_path('app/public/adharcardupload/') . $validate['upload_name'].".pdf"; // Path to the new PDF
+        $explodeimage = explode("/", $oldimage->file);
+        // $oldPath = public_path($oldimage->file); // Path to the old PDF
+        // $newPath = public_path("adharcardupload/" . $validate['upload_name'].".pdf"); // Path to the new PDF
+        $oldPath = storage_path('app/public/'.$oldimage->file); // Path to the old PDF
+        $newPath = storage_path("app/adharcardupload/". $validate['upload_name'].".pdf") ; // Path to the new PDF
+        dump($oldPath);
+        dd($newPath);
+        if (file_exists($oldPath)) {
         Storage::move($oldPath, $newPath);
         // rename($oldPath, $newPath);
-        
+        }else{
+            dd("not found");
+        }
         DeclarationUploads::where('id', $validate['id'])  
         ->update( [
         'file' => 'adharcardupload/' . $validate['upload_name'].'.pdf',

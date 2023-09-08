@@ -76,38 +76,39 @@ $(document).ready(function() {
         $('.message').fadeOut("slow");
     }, 2000);
     var userId = {{ auth()->user()->role }};
-    var hideProofingColumn = false; 
-    var hideFinalProofingColumn = false; 
+    var hideProofingColumn = true; 
+    var hideFinalProofingColumn = true; 
 
     if (userId ==4) {
-        hideProofingColumn = true; 
+        hideProofingColumn = false; 
     }
     if (userId ==3) {
-        hideFinalProofingColumn = true; 
+        hideFinalProofingColumn = false; 
     }
     $('#role_table').DataTable({
             processing: true,
             serverSide: true,
             ajax: "{{ route('declaration.show') }}",
+          
             columns: [
-                { data: 'Id', name: 'Id', 
+                { name: 'Id', 
                     render: function (data, type, row) {
                       return row.id;    
                     }
                 },
-                { data: 'File', name: 'File',            
+                { name: 'File',            
                     render: function (data, type, row) {
                         return '<a href="/'+row.file+'" target="_blank" ><i class="bi-file-earmark-post-fill"></i></a>';
                     },
                 },
-                { data: 'File Name', name: 'File Name',            
+                { name: 'File Name',            
                     render: function (data, type, row) {
                         var parts = row.file.split('/');
                         var imageName = parts[parts.length - 1];
                         return imageName;
                     },
                 },
-                { data: 'Status', name: 'Status',
+                {name: 'Status',
                     render: function (data, type, row) {
                         if (row.status === 'draft') {
                             return '<span class="badge rounded-pill draft">Draft</span>';
@@ -120,7 +121,7 @@ $(document).ready(function() {
                         }
                     }
                  },
-                { data: 'Type', name: 'Type',
+                { name: 'Type',
                     render: function (data, type, row) {
                         var selectOptions = '<select name="type_filter" class="form-select" style="width:200px;" id="' + row.id + '_type_filter" onChange="typeChange(' + row.id + ')">';
                         selectOptions += '<option value="">Type</option>';
@@ -132,12 +133,12 @@ $(document).ready(function() {
                         return selectOptions;
                     }
                 },
-                { data: 'Uploded User', name: 'Uploded User',
+                { name: 'Uploded User',
                 render: function (data, type, row) {
                         return row.draftuser.name;
                     }
                 },
-                { data: 'Proofing', name: 'Proofing', 
+                {name: 'Proofing',visible: hideProofingColumn,
                     render: function (data, type, row) {
                         if (row.proofed_user_id == null) {
                             return '<button class="btn btn-primary mt-3" style="padding: 3px; font-size: 13px;" onClick="declarationStatusChange(' + row.id + ', \'proofed\')">Proofing</button>';
@@ -145,7 +146,7 @@ $(document).ready(function() {
                             return row.prooftuser.name;
                         }
                     }},
-                { data: 'Final Proofing', name: 'Final Proofing',
+                { name: 'Final Proofing', visible: hideFinalProofingColumn,
                     render: function (data, type, row) {
                         if (row.final_proofed_user_id == null) {
                             return '<button class="btn btn-primary mt-3" style="padding: 3px;font-size: 13px;" onClick="declarationStatusChange('+row.id+', \'final_proofed\')">Final Proofing</button>';
@@ -154,9 +155,8 @@ $(document).ready(function() {
                         }
                     }
                  },
-                { data: 'Action', name: 'Action', orderable: false, searchable: false, 
+                { name: 'Action', orderable: false, searchable: false, 
                     render: function (data, type, row) {
-              
                         return  '<i style="color:#4154f1;" onClick="deleteuploaddeclaration('+row.id+')" href="javascript:void(0)" class="fa fa-trash fa-fw pointer"></i><i style="color:#4154f1;" onClick="openrenamemodal('+row.id+')" href="javascript:void(0)" class="fa fa-edit fa-fw pointer"></i>';
                     }
                  },
