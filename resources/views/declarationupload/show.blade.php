@@ -8,12 +8,9 @@
         <div class="card-body">
             <!-- <a href="" class="btn btn-primary mt-3">ADD<i class="bi bi-plus"></i></a> -->
             <div class="box-header with-border mt-3" id="filter-box">
-                @if(session()->has('message'))
-                <div class="alert alert-success message">
-                    {{ session()->get('message') }}
+               
+                <div class="alert alert-success message" style="display:none;">
                 </div>
-
-                @endif
                 <br>
                 <div class="box-body table-responsive" style="margin-bottom: 5%">
                     <table class="table table-borderless dashboard" id="role_table">
@@ -71,6 +68,7 @@
 @endsection
 @section('js_scripts')
 <script>
+    var uploadTable =null;
 $(document).ready(function() {
     setTimeout(function() {
         $('.message').fadeOut("slow");
@@ -85,7 +83,7 @@ $(document).ready(function() {
     if (userId ==3) {
         hideFinalProofingColumn = false; 
     }
-    $('#role_table').DataTable({
+    uploadTable = $('#role_table').DataTable({
             processing: true,
             serverSide: true,
             ajax: "{{ route('declaration.show') }}",
@@ -126,6 +124,7 @@ $(document).ready(function() {
                         var selectOptions = '<select name="type_filter" class="form-select" style="width:200px;" id="' + row.id + '_type_filter" onChange="typeChange(' + row.id + ')">';
                         selectOptions += '<option value="">Type</option>';
                         selectOptions += '<option value="blur"' + (row.type === "blur" ? ' selected' : '') + '>Blur</option>';
+                        selectOptions += '<option value="duplicate"' + (row.type === "duplicate" ? ' selected' : '') + '>Duplicate</option>';
                         selectOptions += '<option value="not_clear"' + (row.type  === "not_clear" ? ' selected' : '') + '>Not Clear</option>';
                         selectOptions += '<option value="text_missplaced"' + (row.type  === "text_missplaced" ? ' selected' : '') + '>Text Missplaced</option>';
                         selectOptions += '<option value="position_not_correct"' + (row.type  === "position_not_correct" ? ' selected' : '') + '>Position Not correct</option>';
@@ -178,11 +177,27 @@ $(document).ready(function() {
         url: "{{ url('/upload/edit') }}",
         data: {
             id: id,
-            upload_name: upload_name
+            file_name: upload_name
         },
         dataType: 'json',
         success: function(res) {
-            // location.reload();
+            if (res.errors) {
+                    $('.alert-danger').html('');
+                    $.each(res.errors, function(key, value) {
+                        $('.alert-danger').show();
+                        $('.alert-danger').append('<li>' + value + '</li>');
+                    })
+                } else {
+                    $('.alert-danger').html('');
+                    $('.message').show();
+                    $('.message').html("File Rename Successfully!");
+                    setTimeout(function() {
+                        $('.message').fadeOut("slow");
+                    }, 2000);
+                    $("#renamefilemodal").modal('hide');
+                    // location.reload();
+                }
+                uploadTable.ajax.reload();
         }
     });
     });
@@ -199,7 +214,12 @@ if (confirm("Are you sure ?") == true) {
         },
         dataType: 'json',
         success: function(res) {
-            location.reload();
+            $('.message').show();
+            $('.message').html("File Deleted Successfully!");
+            setTimeout(function() {
+                $('.message').fadeOut("slow");
+            }, 2000);
+            uploadTable.ajax.reload();
         }
     });
 }
@@ -217,7 +237,12 @@ if (confirm("Are you sure want to change status of Id: "+id ) == true) {
         },
         dataType: 'json',
         success: function(res) {
-            location.reload();
+            $('.message').show();
+            $('.message').html("Status Updated Successfully!");
+            setTimeout(function() {
+                $('.message').fadeOut("slow");
+            }, 2000);
+            uploadTable.ajax.reload();
         }
     });
 }
@@ -234,12 +259,19 @@ function typeChange(id) {
         },
         dataType: 'json',
         success: function(res) {
-            location.reload();
+            $('.message').show();
+            $('.message').html("Type Changed Successfully!");
+            setTimeout(function() {
+                $('.message').fadeOut("slow");
+            }, 2000);
+            uploadTable.ajax.reload();
         }
     });
 }
 
 function openrenamemodal(id) {
+    $('.alert-danger').hide();
+    $("#upload_name").val("");
     $("#upload_id").val(id);
     $("#renamefilemodal").modal("show");
 }

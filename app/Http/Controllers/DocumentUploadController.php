@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
-use App\Models\DeclarationUploads;
+use App\Models\DocumentUploads;
 use DataTables;
 use Storage;
 
-class DeclarationUploadController extends Controller
+class DocumentUploadController extends Controller
 {
     /**
      * Display login page.
@@ -31,10 +31,12 @@ class DeclarationUploadController extends Controller
         {
             foreach ($files as $key => $file) {
                 $filename = null;
-                $filename = time().'.'.$key.'.'.$file->extension();
+                $fileTime = time().'.'.$key;
+                $filename = $fileTime.'.'.$file->extension();
                 $file->move(public_path('adharcardupload'), $filename);
                 $path ='adharcardupload/'.$filename;
                 $upload_data[] = [
+                    'file_name' => $fileTime,
                     'file' => $path,
                     'status' => 'draft',
                     'draft_user_id' => auth()->user()->id,
@@ -45,7 +47,7 @@ class DeclarationUploadController extends Controller
             $data = array_values($upload_data);
 			$bulk_uplaod_data = array_chunk($data, 50);
 		    foreach($bulk_uplaod_data as $upload){
-                $declarationUploads =DeclarationUploads::insert($upload);
+                $declarationUploads =DocumentUploads::insert($upload);
 		    }
 
            
@@ -57,7 +59,7 @@ class DeclarationUploadController extends Controller
     public function show(Request $request)
     {
         if ($request->ajax()) {
-        $declarationUploads = DeclarationUploads::with('draftuser', 'prooftuser', 'finalproofuser')->get();
+        $declarationUploads = DocumentUploads::with('draftuser', 'prooftuser', 'finalproofuser')->get();
         return DataTables::of($declarationUploads)->toJson();
         }
         return view('declarationupload.show');
@@ -65,8 +67,8 @@ class DeclarationUploadController extends Controller
 
     public function destroy(Request $request)
     {
-        $Stores = DeclarationUploads::where('Id',$request->id)->delete(); 
-		$request->session()->flash('message','Deleted successfully.');
+        $Stores = DocumentUploads::where('Id',$request->id)->delete(); 
+		// $request->session()->flash('message','Deleted successfully.');
         return Response()->json(['status'=>200]);  
     }
 
@@ -79,7 +81,7 @@ class DeclarationUploadController extends Controller
         );
         if ($validator->fails())
         {
-            return Redirect::back()->withErrors("Something went wrong!");
+            return response()->json(['errors'=>$validator->errors()->all()]);
         } 
         $validate = $validator->valid();
         $update = [
@@ -93,58 +95,55 @@ class DeclarationUploadController extends Controller
         if($validate['status'] =="final_proofed"){
             $update['final_proofed_user_id'] = auth()->user()->id;
         }
-        DeclarationUploads::where('id',$validate['id'])  
+        DocumentUploads::where('id',$validate['id'])  
 		->update( $update);
-        $request->session()->flash('message','Status Updated Successfully!');
+        // $request->session()->flash('message','Status Updated Successfully!');
         return Response()->json(['status'=>200]);  
     }
 
     public function declarationTypeChange(Request $request)
     {
         if($request->has('id')){
-            DeclarationUploads::where('id', $request->id)  
+            DocumentUploads::where('id', $request->id)  
             ->update( [
             'type' => $request->type,
             'updated_at' => date('Y-m-d H:i:s')
         ]);
         }
-        $request->session()->flash('message','Type Change Successfully!');
+        // $request->session()->flash('message','Type Change Successfully!');
         return Response()->json(['status'=>200]);
     }
 
     public function renameUpload(Request $request)
     {
         $validator = \Validator::make($request->all(),[
-            'upload_name'=>'required', 
+            'file_name'=>'required|unique:document_uploads', 
         ]
         );
         if ($validator->fails())
         {
-            return Redirect::back()->withErrors("Something went wrong!");
+            return response()->json(['errors'=>$validator->errors()->all()]);
         } 
         $validate = $validator->valid();
 
-        $oldimage = DeclarationUploads::where('Id',$validate['id'])->first(); 
+        $oldimage = DocumentUploads::where('Id',$validate['id'])->first(); 
         $explodeimage = explode("/", $oldimage->file);
-        // $oldPath = public_path($oldimage->file); // Path to the old PDF
-        // $newPath = public_path("adharcardupload/" . $validate['upload_name'].".pdf"); // Path to the new PDF
-        $oldPath = storage_path('app/public/'.$oldimage->file); // Path to the old PDF
-        $newPath = storage_path("app/adharcardupload/". $validate['upload_name'].".pdf") ; // Path to the new PDF
-        dump($oldPath);
-        dd($newPath);
-        if (file_exists($oldPath)) {
-        Storage::move($oldPath, $newPath);
-        // rename($oldPath, $newPath);
-        }else{
-            dd("not found");
-        }
-        DeclarationUploads::where('id', $validate['id'])  
-        ->update( [
-        'file' => 'adharcardupload/' . $validate['upload_name'].'.pdf',
-        'updated_at' => date('Y-m-d H:i:s')
-        ]);
+        $extension = pathinfo($explodeimage[1], PATHINFO_EXTENSION);
         
-        $request->session()->flash('message','File Rename Successfully!');
+        $oldPath = public_path().DIRECTORY_SEPARATOR.'adharcardupload'.DIRECTORY_SEPARATOR.$explodeimage[1]; // Path to the old PDF
+
+        $newPath = public_path().DIRECTORY_SEPARATOR."adharcardupload".DIRECTORY_SEPARATOR . $validate['file_name'].".".$extension; // Path to the new PDF
+      
+        if (file_exists($oldPath)) {
+            rename($oldPath, $newPath);
+            DocumentUploads::where('id', $validate['id'])  
+            ->update( [
+            'file_name' => $validate['file_name'],
+            'file' => 'adharcardupload/' . $validate['file_name'].'.pdf',
+            'updated_at' => date('Y-m-d H:i:s')
+            ]);
+        }
+        // $request->session()->flash('message','File Rename Successfully!');
         return Response()->json(['status'=>200]);
     
     }

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateDeclarationUploadsTable extends Migration
+class CreateDocumentUploadsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,9 @@ class CreateDeclarationUploadsTable extends Migration
      */
     public function up()
     {
-        Schema::create('declaration_uploads', function (Blueprint $table) {
+        Schema::create('document_uploads', function (Blueprint $table) {
             $table->id();
+            $table->string("file_name")->nullable();
             $table->string("file")->nullable();
             $table->string("type")->nullable();
             $table->string("status")->nullable();
@@ -35,6 +36,6 @@ class CreateDeclarationUploadsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('declaration_uploads');
+        Schema::dropIfExists('document_uploads');
     }
 }

@@ -189,7 +189,7 @@
                     <span>Dashboard</span>
                 </a>
             </li><!-- End Dashboard Nav -->
-            @if(auth()->user()->role == 1 || auth()->user()->role == 5)
+            @if(auth()->user()->role == 1)
              <li class="nav-item">
                 <a class="nav-link {{ request()->is('declarationupload') ? '' : 'collapsed' }}" href="{{ url('/declaration/upload') }}">
                     <i class="bi-shop"></i>
@@ -197,7 +197,6 @@
                 </a>
             </li>
             @endif
-            @if(auth()->user()->role != 5)
              <li class="nav-item">
                 <a class="nav-link {{ request()->is('/declaration/list') ? '' : 'collapsed' }}" href="{{ url('/declaration/list') }}">
                 <i class="bi bi-layout-text-window-reverse"></i>
@@ -205,7 +204,6 @@
                     </span>
                 </a>
             </li>
-            @endif
             @if(auth()->user()->role ==1 || auth()->user()->role == 2)
             <li class="nav-item">
                 <a class="nav-link {{ request()->is('users') ? '' : 'collapsed' }}" href="{{ url('/users') }}">

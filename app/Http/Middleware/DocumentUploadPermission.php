@@ -16,7 +16,7 @@ class DocumentUploadPermission
      */
     public function handle(Request $request, Closure $next)
     {
-        if (auth()->user()->role == 3 || auth()->user()->role == 4) {
+        if (auth()->user()->role == 2 || auth()->user()->role == 3|| auth()->user()->role == 4) {
             return redirect('/dashboard');
         }
         return $next($request);

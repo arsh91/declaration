@@ -69,16 +69,16 @@
                              <!-- <td>{{ $data->password}}</td> -->
                              <td>{{ $data->state}}</td>
                                 <td>
-                                <div class="form-check">
+                                <!-- <div class="form-check">
                                 <input class="form-check-input" type="radio" name="roleuser_{{$data->id}}" id="dataentryuser_{{$data->id}}" onclick="changeRoleFunc('{{$data->id}}', 5)" {{$data->role == 5 ? 'checked' : ''}}>
                                 <label class="form-check-label" for="dataentryuser">
                                     Data Entry User
                                 </label>
-                                </div>
+                                </div> -->
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="roleuser_{{$data->id}}" id="proofinguser_{{$data->id}}" onclick="changeRoleFunc('{{$data->id}}', 3)" {{$data->role == 3 ? 'checked' : ''}}>
                                 <label class="form-check-label" for="proofinguser">
-                                    Proofing User
+                                    Draft User
                                 </label>
                             </div>
                             <div class="form-check">
